@@ -8,7 +8,9 @@ This extends ActiveAdmin to allow for better editing of associations.
 
 Add this to your `Gemfile`:
 
-    gem 'aa_associations'
+```ruby
+gem 'aa_associations'
+```
 
 Then run `bundle install`.
 
@@ -26,7 +28,9 @@ So I've packaged [jquery-tokeninput](https://github.com/loopj/jquery-tokeninput)
 
 If you aren't interested in using any of this just add this to your `application.rb` config:
 
-    config.aa_associations.autocomplete = false
+```ruby
+config.aa_associations.autocomplete = false
+```
 
 If you do want it here's how you set it up:
 
@@ -41,38 +45,46 @@ First, we'll need to make sure the JS and CSS is setup for the admin part of the
     Format Label isn't needed for jquery.tokeninput.js but it is useful when using jQueryUI's autocomplete in other parts of your site. It can allow you to custom format the display label for the autocomplete results displayed by jQueryUI.
     The `:format_label` option should be either a symbol that is a name of a method on an instance of the model, or a proc (or anything that responds to call) that takes 1 parameter which will be the record.
     Example:
-      <code><pre>
+
+        ```ruby
         autocomplete :name, :format_label => proc {|speaker|
           label =  "<span id=\"speaker-#{speaker.id}\">#{speaker.name} <em>("
           label << "#{speaker.position}, " unless speaker.position.blank?
           label << "#{speaker.talk_count} talk#{'s' unless speaker.talk_count == 1})</em></span>"
           label
         }
-      </pre></code>
+        ```
+
 * Set values for `config.aa_associations.autocomplete_models` in your `config/application.rb`. This should be a list of the models that you have added `autocomplete` statements to:
 
-      `config.aa_associations.autocomplete_models = %w(post user tag)`
+    ```ruby
+    config.aa_associations.autocomplete_models = %w(post user tag)
+    ```
 
 If you plan to use other autocomplete JS libraries there are 2 other configs you may want to look at:
 
 Different libraries send different param names for the query to the autocomplete endpoint you give it. For instance, jquery.tokeninput uses the `q` parameter while jQueryUI uses the `term` parameter. If no setting is given we will just use the `q` parameter. To configure this you need a statement like this in your `config/application.rb`:
 
-    config.aa_associations.autocomplete_query_term_param_names = [:q, :term]
+```ruby
+config.aa_associations.autocomplete_query_term_param_names = [:q, :term]
+```
 
 It might happen that the hash the autocomplete ActiveRecord macro provides for individual results won't play nice with the JS autocomplete plugin you're using. In this case we provide a way to format individual results yourself. Just assign an object that responds to call (like a proc) to `config.aa_associations.autocomplete_result_formatter` in your `config/application.rb` like so:
 
-    config.aa_associations.autocomplete_result_formatter = proc { |record, autocomplete_attribute, autocomplete_options|
-      {:name => record.send(autocomplete_attribute), :id => record.id,
-        :another_value => record.send(autocomplete_options[:other_value_method])}
-    }
-
+```ruby
+config.aa_associations.autocomplete_result_formatter = proc { |record, autocomplete_attribute, autocomplete_options|
+  {:name => record.send(autocomplete_attribute), :id => record.id,
+    :another_value => record.send(autocomplete_options[:other_value_method])}
+}
+```
 
 ### Other Configuration
 
 We add functionality so that when you do a destroy action you are redirected back to the Referer or the ActiveAdmin Dashboard. If you'd like to remove this functionality you can just put this in your `config/application.rb`:
 
-    config.aa_associations.destroy_redirect = false
-
+```ruby
+config.aa_associations.destroy_redirect = false
+```
 
 ### Setup your admin resource definitions
 
@@ -82,36 +94,42 @@ The main thing this Rails Engine provides is a way to easily configure simple fo
 
 Add `association_actions` somewhere inside your ActiveAdmin resource definition block:
 
-    ActiveAdmin.register Post do
-      association_actions
-      # ...
-    end
+```ruby
+ActiveAdmin.register Post do
+  association_actions
+  # ...
+end
+```
 
 You then also need to tell it you want to use the form template bundled with this Engine:
 
-    ActiveAdmin.register Post do
-      association_actions
-      
-      form :partial => "admin/shared/form"
-      # ...
-    end
+```ruby
+ActiveAdmin.register Post do
+  association_actions
+  
+  form :partial => "admin/shared/form"
+  # ...
+end
+```
 
 Now you need to define the columns and the `has_many` relationships:
 
-    ActiveAdmin.register Post do
-      association_actions
-      
-      form :partial => "admin/shared/form"
-      
-      form_columns :title, :body, :slug, :author, :published_at, :featured
-      
-      form_associations do
-        association :tags, [:name, :post_count]
-        association :revisions do
-          fields :version_number, :created_at, :update_at
-        end
-      end
+```ruby
+ActiveAdmin.register Post do
+  association_actions
+  
+  form :partial => "admin/shared/form"
+  
+  form_columns :title, :body, :slug, :author, :published_at, :featured
+  
+  form_associations do
+    association :tags, [:name, :post_count]
+    association :revisions do
+      fields :version_number, :created_at, :update_at
     end
+  end
+end
+```
 
 #### Defining the columns you want to edit in your form:
 
@@ -124,74 +142,86 @@ The `form_associations` is used to define the associations you want to manage at
 
 If you use the `associations` method inside the block then you can define multiple associations at once:
 
-    form_associations do
-      association :tags, :revisions
-    end
+```ruby
+form_associations do
+  association :tags, :revisions
+end
+```
 
 In this case all the `content_columns` for the models will be used as the columns in the association tables. This is probably good for getting started quickly but you'll probably find you quickly outgrow it.
 
 You can use individual `association` method calls and pass the list of attributes/methods to use as columns in the table:
 
-    form_associations do
-      association :tags, [:name, :post_count]
-    end
+```ruby
+form_associations do
+  association :tags, [:name, :post_count]
+end
+```
 
 You can also define the columns inside a block passed to the `association` method with a call to the `fields` method:
 
-    form_associations do
-      association :revisions do
-        fields :version_number, :created_at, :update_at
-      end
-    end
+```ruby
+form_associations do
+  association :revisions do
+    fields :version_number, :created_at, :update_at
+  end
+end
+```
 
 Or if you prefer you can use multiple calls to the `field` method:
 
-    form_associations do
-      association :revisions do
-        field :version_number
-        field :created_at
-        field :update_at
-      end
-    end
+```ruby
+form_associations do
+  association :revisions do
+    field :version_number
+    field :created_at
+    field :update_at
+  end
+end
+```
 
 You are also free to mix and match:
 
-    form_associations do
-      association :revisions, [:version_number] do
-        fields :created_at, :another_column
-        field :update_at
-      end
-    end
+```ruby
+form_associations do
+  association :revisions, [:version_number] do
+    fields :created_at, :another_column
+    field :update_at
+  end
+end
+```
 
 
 #### Fine grained control over the form:
 
 If you want more control over the main part of the form you can define a `active_association_form` which takes a block with 1 parameter (which is the form object):
 
-    ActiveAdmin.register Post do
-      association_actions
-      
-      form :partial => "admin/shared/form"
-      
-      active_association_form do |f|
-        f.inputs do
-          f.input :title
-          f.input :body
-          f.input :slug, :label => "This is the value that will be used in the URL bar for the post."
-        end
-        f.inputs do
-          f.input :author, :as => :select
-          f.input :published_at
-        end
-      end
-      
-      form_associations do
-        association :tags, [:name, :post_count]
-        association :revisions do
-          fields :version_number, :created_at, :update_at
-        end
-      end
+```ruby
+ActiveAdmin.register Post do
+  association_actions
+  
+  form :partial => "admin/shared/form"
+  
+  active_association_form do |f|
+    f.inputs do
+      f.input :title
+      f.input :body
+      f.input :slug, :label => "This is the value that will be used in the URL bar for the post."
     end
+    f.inputs do
+      f.input :author, :as => :select
+      f.input :published_at
+    end
+  end
+  
+  form_associations do
+    association :tags, [:name, :post_count]
+    association :revisions do
+      fields :version_number, :created_at, :update_at
+    end
+  end
+end
+```
 
 #### Overriding the templates
 
